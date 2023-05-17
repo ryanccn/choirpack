@@ -21,7 +21,11 @@ var UseCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if !utils.Exists("package.json") {
-			log.Fatalln("Working directory doesn't seem to be a Node.js package")
+			log.Fatalln("Working directory doesn't seem to be a Node.js package.")
+		}
+
+		if !corepack.CorepackStatus() {
+			log.Fatalln("Corepack is not enabled or misconfigured. Try running `corepack enable`.")
 		}
 
 		chosenPackageManager := args[0]
