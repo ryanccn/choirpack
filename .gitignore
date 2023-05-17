@@ -5,3 +5,8 @@
 
 /test/
 /build/
+
+
+# nix stuff
+.direnv/
+result
