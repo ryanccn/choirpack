@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/fatih/color"
 	"github.com/ryanccn/choirpack/corepack"
 	"github.com/ryanccn/choirpack/packagejson"
 	"github.com/ryanccn/choirpack/utils"
@@ -20,12 +21,15 @@ var UseCmd = &cobra.Command{
 	Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 
 	Run: func(cmd *cobra.Command, args []string) {
+		errorLog := color.New(color.FgRed).SetWriter(os.Stderr)
 		if !utils.Exists("package.json") {
-			log.Fatalln("Working directory doesn't seem to be a Node.js package.")
+			errorLog.Println("Working directory doesn't seem to be a Node.js package.")
+			os.Exit(1)
 		}
 
 		if !corepack.CorepackStatus() {
-			log.Fatalln("Corepack is not enabled or misconfigured. Try running `corepack enable`.")
+			errorLog.Println("Corepack is not enabled or misconfigured. Try running `corepack enable`.")
+			os.Exit(1)
 		}
 
 		chosenPackageManager := args[0]
@@ -36,7 +40,7 @@ var UseCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 		}
-		fmt.Println("> Cleared stale files")
+		fmt.Printf("%v stale files\n", color.New(color.FgYellow).Sprint("Cleared"))
 
 		versions := corepack.GetCorepackVersions()
 
@@ -51,15 +55,15 @@ var UseCmd = &cobra.Command{
 
 		packagejson.ModifyPackageJson(chosenPackageManager, chosenVersion)
 
-		fmt.Printf("> Modified package.json to use %v@%v\n", chosenPackageManager, chosenVersion)
-		fmt.Println("> Reinstalling dependencies")
+		fmt.Printf("%v package.json to use %v@%v\n", color.New(color.FgCyan).Sprint("Modified"), chosenPackageManager, chosenVersion)
+		fmt.Printf("%v dependencies\n", color.New(color.FgGreen).Sprint("Reinstalling"))
 
 		installCommand := exec.Command(chosenPackageManager, "install")
 		installCommand.Stdout = os.Stdout
 		installCommand.Stderr = os.Stderr
 
 		if err := installCommand.Run(); err != nil {
-			log.Fatal(err)
+			os.Exit(installCommand.ProcessState.ExitCode())
 		}
 	},
 }
