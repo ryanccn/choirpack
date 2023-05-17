@@ -4,11 +4,24 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    branches: ["main"]
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      # build for amd64/arm64 on ubuntu, mac, and windows
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        go_arch: [amd64, arm64]
+        include:
+          - os: ubuntu-latest
+            go_os: "linux"
+          - os: macos-latest
+            go_os: "darwin"
+          - os: windows-latest
+            go_os: "windows"
+
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -19,10 +32,14 @@ jobs:
           go-version: "1.20"
 
       - name: Build
-        run: ./build.sh
+        env:
+          GOOS: ${{ matrix.go_os }}
+          GOARCH: ${{ matrix.go_arch }}
+        run: |
+          go build -o build/choirpack-${{ matrix.go_os }}-${{ matrix.go_arch }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: binaries
-          path: build/
+          name: choirpack-${{ matrix.go_os }}-${{ matrix.go_arch }}
+          path: build/choirpack-${{ matrix.go_os }}-${{ matrix.go_arch }}
