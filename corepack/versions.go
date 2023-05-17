@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
-	"path/filepath"
+	"path"
 )
 
 type CorepackVersion struct {
@@ -14,13 +14,7 @@ type CorepackVersion struct {
 }
 
 func GetCorepackVersions() CorepackVersion {
-	homeDir, err := os.UserHomeDir()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fileLoc := filepath.Join(homeDir, ".cache", "node", "corepack", "lastKnownGood.json")
+	fileLoc := path.Join(getCorepackCacheDir(), "lastKnownGood.json")
 	file, err := os.ReadFile(fileLoc)
 
 	if err != nil {
