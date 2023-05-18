@@ -3,6 +3,7 @@ package packagejson
 import (
 	"encoding/json"
 	"log"
+	"strings"
 )
 
 func prettifyJSON(data []byte) []byte {
@@ -12,7 +13,16 @@ func prettifyJSON(data []byte) []byte {
 		log.Fatal(err)
 	}
 
-	pretty, err := json.MarshalIndent(rawData, "", "  ")
+	stringData := string(data[:])
+
+	indentChar := "  "
+	if strings.Contains(stringData, "    ") {
+		indentChar = "    "
+	} else if strings.Contains(stringData, "	") {
+		indentChar = "	"
+	}
+
+	pretty, err := json.MarshalIndent(rawData, "", indentChar)
 	if err != nil {
 		log.Fatal(err)
 	}
