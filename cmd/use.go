@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var cleanPaths = []string{"node_modules", ".yarnrc.yml", ".yarnrc", ".npmrc", "package-lock.json", "yarn.lock", "pnpm-lock.yaml"}
+var cleanPaths = []string{"node_modules", ".yarn", ".pnp.cjs", ".yarnrc.yml", ".yarnrc", ".npmrc", "package-lock.json", "yarn.lock", "pnpm-lock.yaml"}
 
 var UseCmd = &cobra.Command{
 	Use:   "use <name>",
