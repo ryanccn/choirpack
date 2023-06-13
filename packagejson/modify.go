@@ -27,5 +27,5 @@ func ModifyPackageJson(packageManager string, version string) {
 		log.Fatal(err)
 	}
 
-	os.WriteFile(filepath.Join(cwd, "package.json"), prettifyJSON(data), 0644)
+	os.WriteFile(filepath.Join(cwd, "package.json"), data, 0644)
 }
