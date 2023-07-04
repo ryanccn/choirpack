@@ -1,27 +1,26 @@
-name: Go
+name: Build
 
 on:
   push:
     branches: ["main"]
   pull_request:
-  workflow_dispatch:
+    branches: ["main"]
 
 jobs:
   build:
     strategy:
-      # build for amd64/arm64 on ubuntu, mac, and windows
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        go_os: [linux, darwin, windows]
         go_arch: [amd64, arm64]
         include:
-          - os: ubuntu-latest
-            go_os: "linux"
-          - os: macos-latest
-            go_os: "darwin"
-          - os: windows-latest
-            go_os: "windows"
+          - go_os: "linux"
+            runner: ubuntu-latest
+          - go_os: "darwin"
+            runner: macos-latest
+          - go_os: "windows"
+            runner: windows-latest
+    runs-on: ${{ matrix.runner }}
 
-    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3

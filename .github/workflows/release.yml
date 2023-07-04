@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        go_os: [linux, darwin, windows]
+        go_arch: [amd64, arm64]
+        include:
+          - go_os: "linux"
+            runner: ubuntu-latest
+          - go_os: "darwin"
+            runner: macos-latest
+          - go_os: "windows"
+            runner: windows-latest
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.20"
+
+      - name: Build
+        env:
+          GOOS: ${{ matrix.go_os }}
+          GOARCH: ${{ matrix.go_arch }}
+        run: |
+          go build -o build/choirpack-${{ matrix.go_os }}-${{ matrix.go_arch }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: choirpack-${{ matrix.go_os }}-${{ matrix.go_arch }}
+          path: build/choirpack-${{ matrix.go_os }}-${{ matrix.go_arch }}
+
+  release:
+    runs-on: ubuntu-latest
+    needs: ["build"]
+
+    steps:
+      - name: Download artifact (linux/amd64)
+        uses: actions/download-artifact@v3
+        with:
+          name: choirpack-linux-amd64
+          path: build/
+      - name: Download artifact (linux/arm64)
+        uses: actions/download-artifact@v3
+        with:
+          name: choirpack-linux-arm64
+          path: build/
+      - name: Download artifact (darwin/amd64)
+        uses: actions/download-artifact@v3
+        with:
+          name: choirpack-darwin-amd64
+          path: build/
+      - name: Download artifact (darwin/arm64)
+        uses: actions/download-artifact@v3
+        with:
+          name: choirpack-darwin-arm64
+          path: build/
+      - name: Download artifact (windows/amd64)
+        uses: actions/download-artifact@v3
+        with:
+          name: choirpack-windows-amd64
+          path: build/
+      - name: Download artifact (windows/arm64)
+        uses: actions/download-artifact@v3
+        with:
+          name: choirpack-windows-arm64
+          path: build/
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/*
+          draft: true
