@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var configPaths = []string{".yarnrc.yml", ".yarnrc", ".npmrc", "package-lock.json", "yarn.lock", "pnpm-lock.yaml"}
+var configPaths = []string{".yarnrc.yml", ".yarnrc", "package-lock.json", "yarn.lock", "pnpm-lock.yaml"}
 var installPaths = []string{"node_modules", ".yarn", ".pnp.cjs"}
 
 var UseCmd = &cobra.Command{
