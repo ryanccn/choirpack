@@ -9,7 +9,7 @@ import (
 	"github.com/buger/jsonparser"
 )
 
-func ModifyPackageJson(packageManager string, version string) {
+func Modify(packageManager string, version string) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)

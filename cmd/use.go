@@ -13,7 +13,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var cleanPaths = []string{"node_modules", ".yarn", ".pnp.cjs", ".yarnrc.yml", ".yarnrc", ".npmrc", "package-lock.json", "yarn.lock", "pnpm-lock.yaml"}
+var configPaths = []string{".yarnrc.yml", ".yarnrc", ".npmrc", "package-lock.json", "yarn.lock", "pnpm-lock.yaml"}
+var installPaths = []string{"node_modules", ".yarn", ".pnp.cjs"}
 
 var UseCmd = &cobra.Command{
 	Use:   "use <name>",
@@ -34,13 +35,13 @@ var UseCmd = &cobra.Command{
 
 		chosenPackageManager := args[0]
 
-		for _, path := range cleanPaths {
+		for _, path := range configPaths {
 			err := os.RemoveAll(path)
 			if err != nil {
 				log.Fatal(err)
 			}
 		}
-		fmt.Printf("%v stale files\n", color.New(color.FgYellow).Sprint("Cleared"))
+		fmt.Printf("%v old configuration files\n", color.New(color.FgYellow).Sprint("Cleared"))
 
 		versions := corepack.GetCorepackVersions()
 
@@ -53,9 +54,21 @@ var UseCmd = &cobra.Command{
 			chosenVersion = versions.Pnpm
 		}
 
-		packagejson.ModifyPackageJson(chosenPackageManager, chosenVersion)
-
+		packagejson.Modify(chosenPackageManager, chosenVersion)
 		fmt.Printf("%v package.json to use %v@%v\n", color.New(color.FgCyan).Sprint("Modified"), chosenPackageManager, chosenVersion)
+
+		prettified := packagejson.Prettify()
+		if prettified {
+			fmt.Printf("%v package.json with Prettier\n", color.New(color.FgCyan).Sprint("Formatted"))
+		}
+
+		for _, path := range installPaths {
+			err := os.RemoveAll(path)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+
 		fmt.Printf("%v dependencies\n", color.New(color.FgGreen).Sprint("Reinstalling"))
 
 		installCommand := exec.Command(chosenPackageManager, "install")
@@ -63,7 +76,7 @@ var UseCmd = &cobra.Command{
 		installCommand.Stderr = os.Stderr
 
 		if err := installCommand.Run(); err != nil {
-			os.Exit(installCommand.ProcessState.ExitCode())
+			log.Fatal(err)
 		}
 	},
 }

@@ -1,31 +1,40 @@
 package packagejson
 
 import (
-	"encoding/json"
+	"errors"
 	"log"
-	"strings"
+	"os"
+	"os/exec"
+	"path/filepath"
+
+	"github.com/ryanccn/choirpack/utils"
 )
 
-func prettifyJSON(data []byte) []byte {
-	var rawData interface{}
-	err := json.Unmarshal(data, &rawData)
+func Prettify() bool {
+	cwd, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	stringData := string(data[:])
+	prettierPath, err := exec.LookPath("prettier")
 
-	indentChar := "  "
-	if strings.Contains(stringData, "    ") {
-		indentChar = "    "
-	} else if strings.Contains(stringData, "	") {
-		indentChar = "	"
+	if err != nil && !errors.Is(err, exec.ErrNotFound) {
+		log.Fatal(err)
+	} else if err != nil {
+		localPrettier := filepath.Join(cwd, "node_modules", ".bin", "prettier")
+
+		if utils.Exists(localPrettier) {
+			prettierPath = localPrettier
+		} else {
+			return false
+		}
 	}
 
-	pretty, err := json.MarshalIndent(rawData, "", indentChar)
-	if err != nil {
+	prettierCmd := exec.Command(prettierPath, "--write", filepath.Join(cwd, "package.json"))
+
+	if err := prettierCmd.Run(); err != nil {
 		log.Fatal(err)
 	}
 
-	return append(pretty, "\n"...)
+	return true
 }
