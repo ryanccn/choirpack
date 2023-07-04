@@ -14,6 +14,12 @@ $ curl -fsSL https://raw.githubusercontent.com/ryanccn/choirpack/main/install.sh
 
 Alternatively, you can manually download the artifact corresponding to your platform from the latest commit.
 
+### Homebrew
+
+```bash
+$ brew install ryanccn/tap/choirpack
+```
+
 ### Nix
 
 ```bash
