@@ -35,7 +35,10 @@ impl super::OptionsWithAction for Options {
             let version = match &self.version {
                 Some(version) => version.to_owned(),
                 None => {
-                    println!("Fetching latest version of {}", self.package_manager.cyan());
+                    println!(
+                        "Fetching latest version of {}...",
+                        self.package_manager.cyan()
+                    );
                     npm::fetch_latest(&self.package_manager).await?
                 }
             };
@@ -54,7 +57,7 @@ impl super::OptionsWithAction for Options {
             );
 
             if !self.no_install {
-                println!("{}", "Installing dependencies".magenta());
+                println!("{}", "Installing dependencies...".magenta());
                 println!(
                     "{}",
                     format!("$ {} install", self.package_manager.to_package_name()).dimmed()

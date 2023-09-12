@@ -34,7 +34,7 @@ impl super::OptionsWithAction for Options {
             let version = match &self.version {
                 Some(version) => version.to_owned(),
                 None => {
-                    println!("Fetching latest version of {}", package_manager.cyan());
+                    println!("Fetching latest version of {}...", package_manager.cyan());
                     npm::fetch_latest(&package_manager).await?
                 }
             };
