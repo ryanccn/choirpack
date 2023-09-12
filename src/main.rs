@@ -1,4 +1,4 @@
-use std::{io::stdout, path::PathBuf};
+use std::io::stdout;
 
 use anyhow::Result;
 use clap::{CommandFactory, Parser, Subcommand};
@@ -11,6 +11,7 @@ mod npm;
 mod package_manager;
 mod packagejson;
 
+use cmd::OptionsWithAction;
 pub use package_manager::PackageManager;
 
 #[derive(Parser, Debug)]
@@ -23,40 +24,11 @@ struct Cmd {
 #[derive(Subcommand, Debug)]
 enum Commands {
     /// Use a package manager for a Node.js project
-    Use {
-        /// The package manager to use
-        package_manager: PackageManager,
-
-        /// The version to use for the package manager (defaults to latest)
-        #[arg(long, value_parser = npm::version_value_parser)]
-        version: Option<String>,
-
-        /// Path to the Node.js project
-        #[arg(long)]
-        folder: Option<PathBuf>,
-
-        /// Disable re-installing after using the package manager
-        #[arg(long)]
-        no_install: bool,
-    },
-
+    Use(cmd::use_::Options),
     /// Update the package manager for a Node.js project
-    Update {
-        /// The version to use for the package manager (defaults to latest)
-        #[arg(long, value_parser = npm::version_value_parser)]
-        version: Option<String>,
-
-        /// Path to the Node.js project
-        #[arg(long)]
-        folder: Option<PathBuf>,
-    },
-
+    Update(cmd::update::Options),
     /// Clean the Corepack cache
-    Clean {
-        /// Timeframe for keeping package managers (ones not used within this timeframe are deleted)
-        #[arg(default_value = "7d")]
-        duration: String,
-    },
+    Clean(cmd::clean::Options),
 
     /// Generate shell completions
     Completions {
@@ -79,27 +51,14 @@ async fn main() -> Result<()> {
     let cmd = Cmd::parse();
 
     match cmd.command {
-        Commands::Use {
-            package_manager,
-            version,
-            folder,
-            no_install,
-        } => {
-            cmd::use_::action(cmd::use_::Options {
-                package_manager,
-                version,
-                folder,
-                no_install,
-            })
-            .await?;
+        Commands::Use(options) => {
+            options.action().await?;
         }
-
-        Commands::Update { version, folder } => {
-            cmd::update::action(cmd::update::Options { version, folder }).await?;
+        Commands::Update(options) => {
+            options.action().await?;
         }
-
-        Commands::Clean { duration } => {
-            cmd::clean::action(cmd::clean::Options { duration }).await?;
+        Commands::Clean(options) => {
+            options.action().await?;
         }
 
         Commands::Completions { shell } => {

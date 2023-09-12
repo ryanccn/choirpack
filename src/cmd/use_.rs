@@ -1,59 +1,72 @@
 use std::path::PathBuf;
 
 use anyhow::Result;
+use async_trait::async_trait;
+use clap::Args;
 use owo_colors::OwoColorize;
 use tokio::process::Command;
 
 use crate::{no_bun_for_you, npm, packagejson, PackageManager};
 
+#[derive(Args, Debug)]
 pub struct Options {
-    pub package_manager: PackageManager,
-    pub version: Option<String>,
-    pub folder: Option<PathBuf>,
-    pub no_install: bool,
+    /// The package manager to use
+    package_manager: PackageManager,
+
+    /// The version to use for the package manager (defaults to latest)
+    #[arg(long, value_parser = npm::version_value_parser)]
+    version: Option<String>,
+
+    /// Path to the Node.js project
+    #[arg(long)]
+    folder: Option<PathBuf>,
+
+    /// Disable re-installing after using the package manager
+    #[arg(long)]
+    no_install: bool,
 }
 
-pub async fn action(options: Options) -> Result<()> {
-    if options.package_manager == PackageManager::Bun {
-        no_bun_for_you();
-    } else {
-        let version = match options.version {
-            Some(version) => version,
-            None => {
-                println!(
-                    "Fetching latest version of {}",
-                    options.package_manager.cyan()
-                );
-                npm::fetch_latest(&options.package_manager).await?
-            }
-        };
+#[async_trait]
+impl super::OptionsWithAction for Options {
+    async fn action(&self) -> Result<()> {
+        if self.package_manager == PackageManager::Bun {
+            no_bun_for_you();
+        } else {
+            let version = match &self.version {
+                Some(version) => version.to_owned(),
+                None => {
+                    println!("Fetching latest version of {}", self.package_manager.cyan());
+                    npm::fetch_latest(&self.package_manager).await?
+                }
+            };
 
-        let package_json_path = match options.folder {
-            Some(folder) => folder.join("package.json"),
-            None => std::env::current_dir()?.join("package.json"),
-        };
+            let package_json_path = match &self.folder {
+                Some(folder) => folder.join("package.json"),
+                None => std::env::current_dir()?.join("package.json"),
+            };
 
-        packagejson::patch_package_manager(&package_json_path, &options.package_manager, &version)
-            .await?;
+            packagejson::patch_package_manager(&package_json_path, &self.package_manager, &version)
+                .await?;
 
-        println!(
-            "Set package.json to use {}",
-            format!("{}@{}", options.package_manager.to_package_name(), version).green()
-        );
-
-        if !options.no_install {
-            println!("{}", "Installing dependencies".magenta());
             println!(
-                "{}",
-                format!("$ {} install", options.package_manager.to_package_name()).dimmed()
+                "Set package.json to use {}",
+                format!("{}@{}", self.package_manager.to_package_name(), version).green()
             );
 
-            Command::new(options.package_manager.to_package_name())
-                .arg("install")
-                .status()
-                .await?;
-        }
-    }
+            if !self.no_install {
+                println!("{}", "Installing dependencies".magenta());
+                println!(
+                    "{}",
+                    format!("$ {} install", self.package_manager.to_package_name()).dimmed()
+                );
 
-    Ok(())
+                Command::new(self.package_manager.to_package_name())
+                    .arg("install")
+                    .status()
+                    .await?;
+            }
+        }
+
+        Ok(())
+    }
 }

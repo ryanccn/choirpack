@@ -1,6 +1,8 @@
 use std::time::Duration;
 
 use anyhow::Result;
+use async_trait::async_trait;
+use clap::Args;
 use owo_colors::OwoColorize;
 use tokio::fs;
 
@@ -46,22 +48,28 @@ async fn clean_package_manager(name: &str, duration: &Duration) -> Result<()> {
     Ok(())
 }
 
+#[derive(Args, Debug)]
 pub struct Options {
-    pub duration: String,
+    /// Timeframe for keeping package managers (ones not used within this timeframe are deleted)
+    #[arg(default_value = "7d")]
+    duration: String,
 }
 
-pub async fn action(options: Options) -> Result<()> {
-    let duration = humantime::parse_duration(&options.duration)?;
-    let formatted_duration = humantime::format_duration(duration);
+#[async_trait]
+impl super::OptionsWithAction for Options {
+    async fn action(&self) -> Result<()> {
+        let duration = humantime::parse_duration(&self.duration)?;
+        let formatted_duration = humantime::format_duration(duration);
 
-    println!(
-        "Removing versions unused for {}...",
-        format!("more than {}", formatted_duration).yellow()
-    );
+        println!(
+            "Removing versions unused for {}...",
+            format!("more than {}", formatted_duration).yellow()
+        );
 
-    clean_package_manager("pnpm", &duration).await?;
-    clean_package_manager("yarn", &duration).await?;
-    clean_package_manager("npm", &duration).await?;
+        clean_package_manager("pnpm", &duration).await?;
+        clean_package_manager("yarn", &duration).await?;
+        clean_package_manager("npm", &duration).await?;
 
-    Ok(())
+        Ok(())
+    }
 }
