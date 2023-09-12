@@ -1,8 +1,6 @@
-use std::io::stdout;
-
 use anyhow::Result;
-use clap::{CommandFactory, Parser, Subcommand};
-use clap_complete::{generate, Shell};
+use clap::{Parser, Subcommand};
+use enum_dispatch::enum_dispatch;
 use owo_colors::OwoColorize;
 
 mod cmd;
@@ -22,6 +20,7 @@ struct Cmd {
 }
 
 #[derive(Subcommand, Debug)]
+#[enum_dispatch(OptionsWithAction)]
 enum Commands {
     /// Use a package manager for a Node.js project
     Use(cmd::use_::Options),
@@ -29,13 +28,8 @@ enum Commands {
     Update(cmd::update::Options),
     /// Clean the Corepack cache
     Clean(cmd::clean::Options),
-
     /// Generate shell completions
-    Completions {
-        /// Shell
-        #[arg(value_enum)]
-        shell: Shell,
-    },
+    Completions(cmd::completions::Options),
 }
 
 pub fn no_bun_for_you() {
@@ -49,23 +43,6 @@ pub fn no_bun_for_you() {
 #[tokio::main]
 async fn main() -> Result<()> {
     let cmd = Cmd::parse();
-
-    match cmd.command {
-        Commands::Use(options) => {
-            options.action().await?;
-        }
-        Commands::Update(options) => {
-            options.action().await?;
-        }
-        Commands::Clean(options) => {
-            options.action().await?;
-        }
-
-        Commands::Completions { shell } => {
-            let cli = &mut Cmd::command();
-            generate(shell, cli, cli.get_name().to_string(), &mut stdout());
-        }
-    };
-
+    cmd.command.action().await?;
     Ok(())
 }
