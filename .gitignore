@@ -1,0 +1,13 @@
+# macos
+.DS_Store
+
+# ides
+.vscode/
+.idea/
+
+# rust
+/target/
+
+# nix stuff
+.direnv/
+result*
