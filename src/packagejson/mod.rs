@@ -4,7 +4,7 @@ use tokio::fs;
 use regex::Regex;
 use serde::Deserialize;
 
-use std::path::PathBuf;
+use std::path::Path;
 
 use crate::PackageManager;
 
@@ -16,7 +16,7 @@ struct PackageJson {
     package_manager: Option<String>,
 }
 
-pub async fn get_package_manager(folder: &PathBuf) -> Result<PackageManager> {
+pub async fn get_package_manager(folder: &Path) -> Result<PackageManager> {
     let text = fs::read_to_string(folder.join("package.json")).await?;
     let data = serde_json::from_str::<PackageJson>(&text)?;
     let package_manager_str = data
@@ -45,7 +45,7 @@ pub async fn get_package_manager(folder: &PathBuf) -> Result<PackageManager> {
 }
 
 pub async fn patch_package_manager(
-    path: &PathBuf,
+    path: &Path,
     package_manager: &PackageManager,
     version: &str,
 ) -> Result<()> {

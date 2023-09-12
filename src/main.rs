@@ -69,7 +69,7 @@ fn version_value_parser(str: &str) -> Result<String> {
     Ok(str.to_owned())
 }
 
-fn no_bun_for_you() -> () {
+fn no_bun_for_you() {
     println!("Bun is currently {} by Corepack!", "not supported".red());
     println!(
         "Refer to {} for details.",
