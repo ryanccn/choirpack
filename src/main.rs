@@ -31,9 +31,24 @@ enum Commands {
         #[arg(long, value_parser = version_value_parser)]
         version: Option<String>,
 
-        /// Path to the target package.json to modify
+        /// Path to the Node.js project
         #[arg(long)]
-        package_json: Option<PathBuf>,
+        folder: Option<PathBuf>,
+
+        /// Disable re-installing after using the package manager
+        #[arg(long)]
+        no_install: bool,
+    },
+
+    /// Update the package manager for a Node.js project
+    Update {
+        /// The version to use for the package manager (defaults to latest)
+        #[arg(long, value_parser = version_value_parser)]
+        version: Option<String>,
+
+        /// Path to the Node.js project
+        #[arg(long)]
+        folder: Option<PathBuf>,
     },
 
     /// Generate shell completions
@@ -54,6 +69,14 @@ fn version_value_parser(str: &str) -> Result<String> {
     Ok(str.to_owned())
 }
 
+fn no_bun_for_you() -> () {
+    println!("Bun is currently {} by Corepack!", "not supported".red());
+    println!(
+        "Refer to {} for details.",
+        "https://github.com/nodejs/corepack/issues/295".blue()
+    );
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let cmd = Cmd::parse();
@@ -62,14 +85,11 @@ async fn main() -> Result<()> {
         Commands::Use {
             package_manager,
             version,
-            package_json,
+            folder,
+            no_install,
         } => {
             if package_manager == PackageManager::Bun {
-                println!("Bun is currently {} by Corepack!", "not supported".red());
-                println!(
-                    "Refer to {} for details.",
-                    "https://github.com/nodejs/corepack/issues/295".blue()
-                );
+                no_bun_for_you();
             } else {
                 let version = match version {
                     Some(version) => version,
@@ -79,8 +99,10 @@ async fn main() -> Result<()> {
                     }
                 };
 
-                let package_json_path = package_json
-                    .unwrap_or_else(|| std::env::current_dir().unwrap().join("package.json"));
+                let package_json_path = match folder {
+                    Some(folder) => folder.join("package.json"),
+                    None => std::env::current_dir()?.join("package.json"),
+                };
 
                 packagejson::patch_package_manager(&package_json_path, &package_manager, &version)
                     .await?;
@@ -90,16 +112,45 @@ async fn main() -> Result<()> {
                     format!("{}@{}", package_manager.to_package_name(), version).green()
                 );
 
-                println!("{}", "Installing dependencies".magenta());
-                println!(
-                    "{}",
-                    format!("$ {} install", package_manager.to_package_name()).dimmed()
-                );
+                if !no_install {
+                    println!("{}", "Installing dependencies".magenta());
+                    println!(
+                        "{}",
+                        format!("$ {} install", package_manager.to_package_name()).dimmed()
+                    );
 
-                Command::new(package_manager.to_package_name())
-                    .arg("install")
-                    .status()
+                    Command::new(package_manager.to_package_name())
+                        .arg("install")
+                        .status()
+                        .await?;
+                }
+            }
+        }
+
+        Commands::Update { version, folder } => {
+            let folder = folder.unwrap_or_else(|| std::env::current_dir().unwrap());
+            let package_manager = packagejson::get_package_manager(&folder).await?;
+
+            if package_manager == PackageManager::Bun {
+                no_bun_for_you();
+            } else {
+                let version = match version {
+                    Some(version) => version,
+                    None => {
+                        println!("Fetching latest version of {}", package_manager.cyan());
+                        npm::fetch_latest(&package_manager).await?
+                    }
+                };
+
+                let package_json_path = folder.join("package.json");
+
+                packagejson::patch_package_manager(&package_json_path, &package_manager, &version)
                     .await?;
+
+                println!(
+                    "Updated package.json to use {}",
+                    format!("{}@{}", package_manager.to_package_name(), version).green()
+                );
             }
         }
 

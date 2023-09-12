@@ -16,8 +16,8 @@ struct PackageJson {
     package_manager: Option<String>,
 }
 
-pub async fn get_package_manager(path: &PathBuf) -> Result<PackageManager> {
-    let text = fs::read_to_string(path).await?;
+pub async fn get_package_manager(folder: &PathBuf) -> Result<PackageManager> {
+    let text = fs::read_to_string(folder.join("package.json")).await?;
     let data = serde_json::from_str::<PackageJson>(&text)?;
     let package_manager_str = data
         .package_manager
@@ -31,8 +31,16 @@ pub async fn get_package_manager(path: &PathBuf) -> Result<PackageManager> {
         Ok(PackageManager::Yarn)
     } else if package_manager_str.starts_with("pnpm@") {
         Ok(PackageManager::Pnpm)
+    } else if folder.join("package-lock.json").exists() {
+        Ok(PackageManager::Npm)
+    } else if folder.join("yarn.lock").exists() {
+        Ok(PackageManager::YarnClassic)
+    } else if folder.join("pnpm-lock.yaml").exists() {
+        Ok(PackageManager::Pnpm)
+    } else if folder.join("bun.lockb").exists() {
+        Ok(PackageManager::Bun)
     } else {
-        Err(anyhow!("Could not find a valid packageManager value"))
+        Err(anyhow!("Could not find a valid package manager"))
     }
 }
 
