@@ -65,6 +65,7 @@ pub async fn patch_package_manager(
         fs::write(path, new_text.to_string()).await?;
     } else {
         let mut lines = text
+            .trim()
             .split('\n')
             .map(|s| s.to_owned())
             .collect::<Vec<String>>();
@@ -77,16 +78,16 @@ pub async fn patch_package_manager(
             version
         );
 
-        let last_meaningful_line_idx = lines.len() - 3;
+        let last_meaningful_line_idx = lines.len() - 2;
 
         let replace_line = lines.get_mut(last_meaningful_line_idx).unwrap();
         if *replace_line != "{" && !replace_line.ends_with(',') {
             *replace_line = replace_line.to_owned() + ",";
         }
 
-        lines.insert(lines.len() - 2, new_line);
+        lines.insert(lines.len() - 1, new_line);
 
-        let new_text = lines.join("\n");
+        let new_text = lines.join("\n") + "\n";
         fs::write(path, new_text).await?;
     }
 
