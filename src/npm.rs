@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Result};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 use crate::PackageManager;
@@ -32,4 +33,14 @@ pub async fn fetch_latest(package_manager: &PackageManager) -> Result<String> {
             package_manager
         )),
     }
+}
+
+pub fn version_value_parser(str: &str) -> Result<String> {
+    let validator = Regex::new("[\\d.]+")?;
+
+    if !validator.is_match(str) {
+        return Err(anyhow!("not a valid version"));
+    }
+
+    Ok(str.to_owned())
 }
