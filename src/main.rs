@@ -30,6 +30,9 @@ enum Commands {
     Clean(cmd::clean::Options),
     /// Generate shell completions
     Completions(cmd::completions::Options),
+    /// Update the CLI itself from GitHub Releases
+    #[cfg(feature = "self_update")]
+    UpdateSelf(cmd::self_update::Options),
 }
 
 pub fn no_bun_for_you() {

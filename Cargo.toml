@@ -9,7 +9,9 @@ async-trait = "0.1.73"
 clap = { version = "4.4.2", features = ["derive"] }
 clap_complete = "4.4.1"
 enum_dispatch = "0.3.12"
+futures-util = { version = "0.3.28", optional = true }
 humantime = "2.1.0"
+indicatif = { version = "0.17.6", optional = true }
 owo-colors = "3.5.0"
 regex = "1.9.5"
 reqwest = { version = "0.11.20", default-features = false, features = [
@@ -17,7 +19,12 @@ reqwest = { version = "0.11.20", default-features = false, features = [
   "serde_json",
   "json",
   "brotli",
+  "stream",
 ] }
 serde = { version = "1.0.188", features = ["derive"] }
 serde_json = "1.0.106"
 tokio = { version = "1.32.0", features = ["full"] }
+
+[features]
+default = ["self_update"]
+self_update = ["dep:indicatif", "dep:futures-util"]
