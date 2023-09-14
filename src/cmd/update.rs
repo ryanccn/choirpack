@@ -46,7 +46,7 @@ impl super::OptionsWithAction for Options {
 
             println!(
                 "Updated package.json to use {}",
-                format!("{}@{}", package_manager.to_package_name(), version).green()
+                package_manager.with_version(&version).green()
             );
         };
 

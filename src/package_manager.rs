@@ -14,7 +14,7 @@ pub enum PackageManager {
 }
 
 impl PackageManager {
-    pub fn to_package_name(&self) -> String {
+    pub fn package_name(&self) -> String {
         match self {
             PackageManager::Npm => "npm".to_owned(),
             PackageManager::Yarn => "yarn".to_owned(),
@@ -22,6 +22,10 @@ impl PackageManager {
             PackageManager::Pnpm => "pnpm".to_owned(),
             PackageManager::Bun => "bun".to_owned(),
         }
+    }
+
+    pub fn with_version(&self, version: &str) -> String {
+        self.package_name() + "@" + version
     }
 }
 

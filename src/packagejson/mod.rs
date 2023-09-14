@@ -57,9 +57,8 @@ pub async fn patch_package_manager(
         let new_text = existing_regex.replace(
             &text,
             format!(
-                "\"packageManager\": \"{}@{}\"",
-                package_manager.to_package_name(),
-                version
+                "\"packageManager\": \"{}\"",
+                package_manager.with_version(&version),
             ),
         );
         fs::write(path, new_text.to_string()).await?;
@@ -72,10 +71,9 @@ pub async fn patch_package_manager(
 
         let whitespace_str = whitespace::determine(&text)?.to_string();
         let new_line = format!(
-            "{}\"packageManager\": \"{}@{}\"",
+            "{}\"packageManager\": \"{}\"",
             whitespace_str,
-            package_manager.to_package_name(),
-            version
+            package_manager.with_version(&version),
         );
 
         let last_meaningful_line_idx = lines.len() - 2;

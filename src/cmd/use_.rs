@@ -53,14 +53,14 @@ impl super::OptionsWithAction for Options {
 
             println!(
                 "Set package.json to use {}",
-                format!("{}@{}", self.package_manager.to_package_name(), version).green()
+                self.package_manager.with_version(&version).green()
             );
 
             if !self.no_install {
                 println!("{}", "Installing dependencies...".magenta());
                 println!(
                     "{}",
-                    format!("$ {} install", self.package_manager.to_package_name()).dimmed()
+                    format!("$ {} install", self.package_manager.package_name()).dimmed()
                 );
 
                 Command::new(self.package_manager.to_package_name())

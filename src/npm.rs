@@ -15,7 +15,7 @@ struct NpmRegistryResponse {
 pub async fn fetch_latest(package_manager: &PackageManager) -> Result<String> {
     let resp = reqwest::get(format!(
         "https://registry.npmjs.com/{}",
-        package_manager.to_package_name()
+        package_manager.package_name()
     ))
     .await?;
 
