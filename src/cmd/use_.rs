@@ -63,10 +63,14 @@ impl super::OptionsWithAction for Options {
                     format!("$ {} install", self.package_manager.package_name()).dimmed()
                 );
 
-                Command::new(self.package_manager.to_package_name())
-                    .arg("install")
-                    .status()
-                    .await?;
+                let mut install_command = Command::new(self.package_manager.package_name());
+                install_command.arg("install");
+
+                if let Some(dir) = &self.folder {
+                    install_command.current_dir(dir);
+                }
+
+                install_command.status().await?;
             }
         }
 
