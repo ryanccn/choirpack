@@ -26,13 +26,9 @@ pub async fn fetch_latest(package_manager: &PackageManager) -> Result<String> {
         _ => "latest",
     });
 
-    match latest_tag {
-        Some(latest_tag) => Ok(latest_tag.to_owned()),
-        None => Err(anyhow!(
-            "Could not find latest version of {}",
-            package_manager
-        )),
-    }
+    latest_tag
+        .ok_or_else(|| anyhow!("Could not find latest version of {}", package_manager))
+        .cloned()
 }
 
 pub fn version_value_parser(str: &str) -> Result<String> {

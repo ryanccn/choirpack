@@ -58,7 +58,7 @@ pub async fn patch_package_manager(
             &text,
             format!(
                 "\"packageManager\": \"{}\"",
-                package_manager.with_version(&version),
+                package_manager.with_version(version),
             ),
         );
         fs::write(path, new_text.to_string()).await?;
@@ -73,7 +73,7 @@ pub async fn patch_package_manager(
         let new_line = format!(
             "{}\"packageManager\": \"{}\"",
             whitespace_str,
-            package_manager.with_version(&version),
+            package_manager.with_version(version),
         );
 
         let last_meaningful_line_idx = lines.len() - 2;
