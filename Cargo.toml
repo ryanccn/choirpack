@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.75"
 async-trait = "0.1.74"
-clap = { version = "4.4.6", features = ["derive"] }
+clap = { version = "4.4.7", features = ["derive"] }
 clap_complete = "4.4.3"
 enum_dispatch = "0.3.12"
 futures-util = { version = "0.3.28", optional = true }
