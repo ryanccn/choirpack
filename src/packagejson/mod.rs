@@ -66,10 +66,10 @@ pub async fn patch_package_manager(
         let mut lines = text
             .trim()
             .split('\n')
-            .map(|s| s.to_owned())
+            .map(std::borrow::ToOwned::to_owned)
             .collect::<Vec<String>>();
 
-        let whitespace_str = whitespace::determine(&text)?.to_string();
+        let whitespace_str = whitespace::determine(&text).to_string();
         let new_line = format!(
             "{}\"packageManager\": \"{}\"",
             whitespace_str,
@@ -80,7 +80,7 @@ pub async fn patch_package_manager(
 
         let replace_line = lines.get_mut(last_meaningful_line_idx).unwrap();
         if *replace_line != "{" && !replace_line.ends_with(',') {
-            *replace_line = replace_line.to_owned() + ",";
+            *replace_line = replace_line.clone() + ",";
         }
 
         lines.insert(lines.len() - 1, new_line);

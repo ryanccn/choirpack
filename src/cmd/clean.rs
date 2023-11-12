@@ -63,7 +63,7 @@ impl super::OptionsWithAction for Options {
 
         println!(
             "Removing versions unused for {}...",
-            format!("more than {}", formatted_duration).yellow()
+            format!("more than {formatted_duration}").yellow()
         );
 
         clean_package_manager("pnpm", &duration).await?;

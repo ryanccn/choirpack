@@ -1,3 +1,6 @@
+#![warn(clippy::all, clippy::pedantic)]
+#![deny(unsafe_code)]
+
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use enum_dispatch::enum_dispatch;

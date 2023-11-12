@@ -32,7 +32,7 @@ impl super::OptionsWithAction for Options {
             no_bun_for_you();
         } else {
             let version = match &self.version {
-                Some(version) => version.to_owned(),
+                Some(version) => version.clone(),
                 None => {
                     println!("Fetching latest version of {}...", package_manager.cyan());
                     npm::fetch_latest(&package_manager).await?
