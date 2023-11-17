@@ -4,7 +4,7 @@ Simple and powerful Node.js package manager utilities built around [Corepack](ht
 
 ## Installation
 
-Use the package/overlay from the Nix flake or download a binary from GitHub Releases.
+Use the package/overlay from the Nix flake, download a binary from GitHub Releases, or install with Cargo from the Git repository.
 
 ## Usage
 
