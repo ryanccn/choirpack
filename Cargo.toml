@@ -9,7 +9,7 @@ async-trait = "0.1.74"
 clap = { version = "4.4.7", features = ["derive"] }
 clap_complete = "4.4.4"
 enum_dispatch = "0.3.12"
-futures-util = { version = "0.3.28", optional = true }
+futures-util = { version = "0.3.30", optional = true }
 humantime = "2.1.0"
 indicatif = { version = "0.17.7", optional = true }
 owo-colors = "3.5.0"
